@@ -137,7 +137,7 @@ export async function generateSearchQuery(
 
   const response = await openai.chat.completions.create({
     model: STRONG_MODEL,
-    max_tokens: 40,
+    max_completion_tokens: 40,
     messages: [
       {
         role: "system",
