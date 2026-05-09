@@ -29,7 +29,6 @@ interface DriftPathData {
   hops: HopResult[];
   bridges: string[];
   concepts: string[];
-  treasure?: { summary: string; hiddenPattern: string; whyOpen: string };
 }
 
 export default function Home() {
@@ -119,7 +118,6 @@ export default function Home() {
                 ...prev,
                 hops: [...prev.hops, ...data.hops],
                 bridges: [...prev.bridges, ...data.bridges],
-                treasure: undefined,
               }
             : null
         );

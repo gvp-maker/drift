@@ -3,8 +3,6 @@
 import { motion } from "framer-motion";
 import HopCard from "./HopCard";
 import BridgeLabel from "./BridgeLabel";
-import TreasureCard from "./TreasureCard";
-import ConnectionGraph from "./ConnectionGraph";
 
 interface RelatedArticle {
   title: string;
@@ -28,7 +26,6 @@ interface DriftPathData {
   hops: HopResult[];
   bridges: string[];
   concepts: string[];
-  treasure?: { summary: string; hiddenPattern: string; whyOpen: string };
 }
 
 interface DriftPathProps {
@@ -144,33 +141,6 @@ export default function DriftPath({
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Treasure Card */}
-      {data.treasure && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.8 }}
-          className="mt-12 ml-[47px]"
-        >
-          <TreasureCard
-            treasure={data.treasure}
-            startTopic={data.anchor.title}
-            endTopic={
-              data.hops[data.hops.length - 1]?.title ?? data.anchor.title
-            }
-          />
-        </motion.div>
-      )}
-
-      {/* Connection Graph */}
-      <div className="ml-[47px]">
-        <ConnectionGraph
-          hops={allHops.map((h) => ({ title: h.title }))}
-          bridges={data.bridges}
-        />
       </div>
 
       {/* Bottom Actions */}

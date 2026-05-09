@@ -52,10 +52,6 @@ Click any result to start a new drift from that point, turning a linear path int
 
 Extend your path with more hops without losing your existing journey.
 
-### Treasure Card
-
-At the end of each path, a summary card reveals the hidden pattern connecting all the hops and explains why the final destination is worth exploring further.
-
 ## Tech Stack
 
 - **Next.js 16** — React framework

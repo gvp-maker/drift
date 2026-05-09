@@ -5,7 +5,6 @@ import {
   narrateConnection,
   classifyDomain,
   scoreHop,
-  generateTreasure,
 } from "./llm";
 
 export interface RelatedArticle {
@@ -30,7 +29,6 @@ export interface DriftPath {
   hops: HopResult[];
   bridges: string[];
   concepts: string[];
-  treasure?: { summary: string; hiddenPattern: string; whyOpen: string };
 }
 
 type Category =
@@ -310,16 +308,13 @@ export async function drift(
     scoreHop(allHops[i].title, allHops[i].highlight, hop.title, hop.highlight)
   );
 
-  const [scores, treasure] = await Promise.all([
-    Promise.all(scorePromises),
-    generateTreasure(topic, allHops, bridges),
-  ]);
+  const scores = await Promise.all(scorePromises);
 
   hops.forEach((hop, i) => {
     hop.scores = scores[i];
   });
 
-  return { anchor, hops, bridges, concepts, treasure };
+  return { anchor, hops, bridges, concepts };
 }
 
 export async function extendDrift(
