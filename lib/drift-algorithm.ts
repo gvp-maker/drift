@@ -248,18 +248,28 @@ export async function drift(
   let prevHop = anchor;
 
   for (let i = 0; i < numHops; i++) {
-    const cat = pickCategory(sourceDomain, usedCategories, weirdness, mode);
+    const hopWeirdness = i >= 3 ? Math.max(0, weirdness - 1) : weirdness;
+
+    const cat = pickCategory(sourceDomain, usedCategories, hopWeirdness, mode);
     usedCategories.add(cat);
 
-    const conceptPool =
-      weirdness >= 2 && i > 0
-        ? [...currentConcepts.slice(0, 2), concepts[i % concepts.length]]
-        : currentConcepts.slice(0, 3);
+    let conceptPool: string[];
+    if (i < 3) {
+      conceptPool =
+        hopWeirdness >= 2 && i > 0
+          ? [...currentConcepts.slice(0, 2), concepts[i % concepts.length]]
+          : currentConcepts.slice(0, 3);
+    } else {
+      conceptPool = [
+        concepts[i % concepts.length],
+        ...currentConcepts.slice(0, 2),
+      ];
+    }
 
     const query = await generateSearchQuery(
       conceptPool,
       [topic, ...hops.map((h) => h.title)],
-      weirdness
+      hopWeirdness
     );
     const results = await searchTopic(query, {
       category: cat,
@@ -268,7 +278,7 @@ export async function drift(
 
     if (results.length === 0) break;
 
-    const result = pickBestResult(results, seenDomains, seenUrls, weirdness);
+    const result = pickBestResult(results, seenDomains, seenUrls, hopWeirdness);
     seenDomains.add(normalizeDomain(result.domain));
     seenUrls.add(result.url);
     const hop = toHop(result, cat, getRelated(results, result.url));
@@ -286,7 +296,7 @@ export async function drift(
         ? extractConcepts(
             hop.title,
             result.text || result.highlights.join(" "),
-            weirdness,
+            hopWeirdness,
             mode
           )
         : Promise.resolve(currentConcepts),
@@ -346,18 +356,20 @@ export async function extendDrift(
   let prevHighlight = lastHighlight;
 
   for (let i = 0; i < numHops; i++) {
-    const cat = pickCategory(sourceDomain, usedCategories, weirdness, mode);
+    const hopWeirdness = i >= 1 ? Math.max(0, weirdness - 1) : weirdness;
+
+    const cat = pickCategory(sourceDomain, usedCategories, hopWeirdness, mode);
     usedCategories.add(cat);
 
-    const conceptPool =
-      weirdness >= 2 && i > 0
-        ? [...currentConcepts.slice(0, 2), concepts[i % concepts.length]]
-        : currentConcepts.slice(0, 3);
+    const conceptPool = [
+      concepts[i % concepts.length],
+      ...currentConcepts.slice(0, 2),
+    ];
 
     const query = await generateSearchQuery(
       conceptPool,
       [lastTitle, ...hops.map((h) => h.title)],
-      weirdness
+      hopWeirdness
     );
     const results = await searchTopic(query, {
       category: cat,
@@ -366,7 +378,7 @@ export async function extendDrift(
 
     if (results.length === 0) break;
 
-    const result = pickBestResult(results, seenDomains, seenUrlSet, weirdness);
+    const result = pickBestResult(results, seenDomains, seenUrlSet, hopWeirdness);
     seenDomains.add(normalizeDomain(result.domain));
     seenUrlSet.add(result.url);
     const hop = toHop(result, cat, getRelated(results, result.url));
@@ -383,7 +395,7 @@ export async function extendDrift(
         ? extractConcepts(
             hop.title,
             result.text || result.highlights.join(" "),
-            weirdness,
+            hopWeirdness,
             mode
           )
         : Promise.resolve(currentConcepts),
