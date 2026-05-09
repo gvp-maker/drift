@@ -244,7 +244,7 @@ export async function drift(
 
   const hops: HopResult[] = [];
   const bridges: string[] = [];
-  let currentConcepts = concepts;
+  let prevHopConcepts: string[] = [];
   let prevHop = anchor;
 
   for (let i = 0; i < numHops; i++) {
@@ -253,18 +253,11 @@ export async function drift(
     const cat = pickCategory(sourceDomain, usedCategories, hopWeirdness, mode);
     usedCategories.add(cat);
 
-    let conceptPool: string[];
-    if (i < 3) {
-      conceptPool =
-        hopWeirdness >= 2 && i > 0
-          ? [...currentConcepts.slice(0, 2), concepts[i % concepts.length]]
-          : currentConcepts.slice(0, 3);
-    } else {
-      conceptPool = [
-        concepts[i % concepts.length],
-        ...currentConcepts.slice(0, 2),
-      ];
-    }
+    const conceptPool = [
+      ...concepts.filter((_, ci) => ci !== i % concepts.length),
+      concepts[i % concepts.length],
+      ...(prevHopConcepts.length > 0 ? [prevHopConcepts[0]] : []),
+    ].slice(0, 4);
 
     const query = await generateSearchQuery(
       conceptPool,
@@ -284,7 +277,7 @@ export async function drift(
     const hop = toHop(result, cat, getRelated(results, result.url));
     hops.push(hop);
 
-    const [bridge, nextConcepts] = await Promise.all([
+    const [bridge, hopConcepts] = await Promise.all([
       narrateConnection(
         prevHop.title,
         prevHop.highlight,
@@ -299,11 +292,11 @@ export async function drift(
             hopWeirdness,
             mode
           )
-        : Promise.resolve(currentConcepts),
+        : Promise.resolve([]),
     ]);
 
     bridges.push(bridge);
-    currentConcepts = nextConcepts;
+    prevHopConcepts = hopConcepts;
     prevHop = hop;
   }
 
@@ -351,7 +344,7 @@ export async function extendDrift(
 
   const hops: HopResult[] = [];
   const bridges: string[] = [];
-  let currentConcepts = concepts;
+  let prevHopConcepts: string[] = [];
   let prevTitle = lastTitle;
   let prevHighlight = lastHighlight;
 
@@ -362,9 +355,10 @@ export async function extendDrift(
     usedCategories.add(cat);
 
     const conceptPool = [
+      ...concepts.filter((_, ci) => ci !== i % concepts.length),
       concepts[i % concepts.length],
-      ...currentConcepts.slice(0, 2),
-    ];
+      ...(prevHopConcepts.length > 0 ? [prevHopConcepts[0]] : []),
+    ].slice(0, 4);
 
     const query = await generateSearchQuery(
       conceptPool,
@@ -383,7 +377,7 @@ export async function extendDrift(
     seenUrlSet.add(result.url);
     const hop = toHop(result, cat, getRelated(results, result.url));
 
-    const [bridge, nextConcepts] = await Promise.all([
+    const [bridge, hopConcepts] = await Promise.all([
       narrateConnection(
         prevTitle,
         prevHighlight,
@@ -398,12 +392,12 @@ export async function extendDrift(
             hopWeirdness,
             mode
           )
-        : Promise.resolve(currentConcepts),
+        : Promise.resolve([]),
     ]);
 
     hops.push(hop);
     bridges.push(bridge);
-    currentConcepts = nextConcepts;
+    prevHopConcepts = hopConcepts;
     prevTitle = hop.title;
     prevHighlight = hop.highlight;
   }
