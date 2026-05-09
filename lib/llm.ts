@@ -2,6 +2,9 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const STRONG_MODEL = "gpt-5.5";
+const FAST_MODEL = "gpt-4o-mini";
+
 const WEIRDNESS_TEMPS = [0.5, 0.9, 1.1, 1.2];
 
 const MODE_CONCEPT_HINTS: Record<string, string> = {
@@ -95,15 +98,13 @@ export async function extractConcepts(
   weirdness: number = 1,
   mode?: string
 ): Promise<string[]> {
-  const temp = WEIRDNESS_TEMPS[weirdness] ?? 0.9;
   const modeHint =
     mode && MODE_CONCEPT_HINTS[mode]
       ? `\n${MODE_CONCEPT_HINTS[mode]}`
       : "";
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: temp,
+    model: STRONG_MODEL,
     messages: [
       {
         role: "system",
@@ -135,8 +136,7 @@ export async function generateSearchQuery(
   }
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: weirdness === 2 ? 1.0 : 1.3,
+    model: STRONG_MODEL,
     max_tokens: 40,
     messages: [
       {
@@ -172,7 +172,7 @@ export async function narrateConnection(
       : "";
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: FAST_MODEL,
     temperature: 0.7,
     max_tokens: 100,
     messages: [
@@ -194,7 +194,7 @@ Example: "the same feedback loops that make ant colonies efficient also power mo
 
 export async function classifyDomain(topic: string): Promise<string> {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: FAST_MODEL,
     temperature: 0,
     max_tokens: 30,
     messages: [
@@ -218,7 +218,7 @@ export async function scoreHop(
   toHighlight: string
 ): Promise<{ surprise: number; bridge: number; quality: number }> {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: FAST_MODEL,
     temperature: 0,
     max_tokens: 60,
     messages: [
