@@ -56,7 +56,7 @@ export default function DriftPath({
       <div className="relative">
         {/* Vertical connecting line */}
         <motion.div
-          className="absolute left-[17px] top-0 w-px bg-gradient-to-b from-white/[0.08] via-white/[0.05] to-white/[0.02]"
+          className="absolute left-[17px] top-0 w-[3px] -translate-x-[1px] bg-gradient-to-b from-white/[0.15] via-white/[0.10] to-white/[0.04] rounded-full"
           initial={{ height: 0 }}
           animate={{ height: "100%" }}
           transition={{ duration: 2, ease: "easeOut" }}
@@ -75,14 +75,25 @@ export default function DriftPath({
               >
                 {/* Node dot on the line */}
                 <motion.div
-                  className="relative z-10 w-[35px] h-[35px] rounded-full flex items-center justify-center shrink-0
-                             border border-white/[0.08] bg-white/[0.03]"
+                  className={`relative z-10 w-[35px] h-[35px] rounded-full flex items-center justify-center shrink-0
+                             border-2 ${
+                               i < allHops.length - 1
+                                 ? "border-white/[0.25] bg-white/[0.10]"
+                                 : "border-white/[0.12] bg-white/[0.04]"
+                             }`}
                   animate={{
-                    borderColor: [
-                      "rgba(255,255,255,0.08)",
-                      "rgba(255,255,255,0.14)",
-                      "rgba(255,255,255,0.08)",
-                    ],
+                    borderColor:
+                      i < allHops.length - 1
+                        ? [
+                            "rgba(255,255,255,0.25)",
+                            "rgba(255,255,255,0.35)",
+                            "rgba(255,255,255,0.25)",
+                          ]
+                        : [
+                            "rgba(255,255,255,0.12)",
+                            "rgba(255,255,255,0.20)",
+                            "rgba(255,255,255,0.12)",
+                          ],
                   }}
                   transition={{
                     duration: 4,
@@ -90,7 +101,9 @@ export default function DriftPath({
                     delay: i * 0.5,
                   }}
                 >
-                  <span className="text-[11px] font-medium text-white/35">
+                  <span className={`text-[11px] font-medium ${
+                    i < allHops.length - 1 ? "text-white/60" : "text-white/35"
+                  }`}>
                     {i === 0 ? "O" : i}
                   </span>
                 </motion.div>
